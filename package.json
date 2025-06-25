@@ -1,15 +1,15 @@
-
 {
   "name": "whatsapp-copertine",
   "version": "1.0.0",
   "description": "Bot WhatsApp per ricerca copertine da Excel",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js && tail -f /dev/null"
+    "start": "node index.js"
   },
   "dependencies": {
-    "@open-wa/wa-automate": "^4.36.6",
+    "@open-wa/wa-automate": "^4.76.0",
     "axios": "^1.6.7",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "puppeteer": "^21.3.8"
   }
 }
