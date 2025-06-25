@@ -1,8 +1,7 @@
-const { create, Client } = require('@open-wa/wa-automate');
+const venom = require('venom-bot');
 const XLSX = require('xlsx');
 const axios = require('axios');
 const fs = require('fs');
-const path = require('path');
 
 const excelUrl = "https://www.edicolamarlene.it/database.xlsm";
 const localCsv = "database.csv";
@@ -18,8 +17,8 @@ async function downloadAndConvertExcel() {
 function cercaCopertina(codice, numero) {
     const data = fs.readFileSync(localCsv, 'utf8').split("\n");
     const intestazioni = data[0].split(",");
-    const codiceIndex = intestazioni.findIndex(h => h.trim().toLowerCase() === "codice pubblicazione" || h.trim().toLowerCase() === "codice");
-    const numeroIndex = intestazioni.findIndex(h => h.trim().toLowerCase() === "numero");
+    const codiceIndex = intestazioni.findIndex(h => h.trim().toLowerCase().includes("codice"));
+    const numeroIndex = intestazioni.findIndex(h => h.trim().toLowerCase().includes("numero"));
     const linkIndex = intestazioni.findIndex(h => h.trim().toLowerCase().includes("foto") || h.trim().toLowerCase().includes("immagine"));
 
     let match = null;
@@ -43,41 +42,41 @@ function cercaCopertina(codice, numero) {
     }
 }
 
-async function start(client) {
-    client.onMessage(async message => {
-        if (message.body && message.body.includes(" ")) {
-            const [codice, numero] = message.body.trim().split(" ");
-            if (codice && numero) {
-                await downloadAndConvertExcel();
-                const risultati = cercaCopertina(codice, numero);
-                if (risultati.length === 0) {
-                    await client.sendText(message.from, "Foto non presente.");
-                } else {
-                    for (let url of risultati) {
-                        if (!url) continue;
-                        let link = url.trim();
-                        try {
-                            const test = await axios.head(link);
-                            if (test.status !== 200) throw new Error();
-                        } catch {
-                            link = link.replace("http://www.edicoland.com/images/", "https://www.edicolamarlene.it/wp-content/uploads/EdiscanIMG/");
-                        }
-                        await client.sendImage(message.from, link, "copertina.jpg", "Ecco la copertina trovata");
-                    }
-                }
-            }
-        } else {
-            await client.sendText(message.from, "Ciao, sono il tuo chatbot personale per la ricerca delle copertine, forniscimi codice e numero della pubblicazione (digita il codice della pubblicazione, lascia uno spazio, digita il numero della pubblicazione e invia il messaggio)");
-        }
-    });
-}
-
-// ✅ Ottimizzato per Render
-create({
+venom
+  .create({
+    session: 'copertine-bot',
     headless: true,
-    executablePath: process.env.CHROME_PATH || undefined,
     useChrome: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-})
-.then(client => start(client))
-.catch(e => console.error("Errore all'avvio:", e));
+    browserArgs: ['--no-sandbox']
+  })
+  .then(client => {
+    client.onMessage(async message => {
+      if (message.body && message.body.includes(" ")) {
+        const [codice, numero] = message.body.trim().split(" ");
+        if (codice && numero) {
+          await downloadAndConvertExcel();
+          const risultati = cercaCopertina(codice, numero);
+          if (risultati.length === 0) {
+            await client.sendText(message.from, "Foto non presente.");
+          } else {
+            for (let url of risultati) {
+              if (!url) continue;
+              let link = url.trim();
+              try {
+                const test = await axios.head(link);
+                if (test.status !== 200) throw new Error();
+              } catch {
+                link = link.replace("http://www.edicoland.com/images/", "https://www.edicolamarlene.it/wp-content/uploads/EdiscanIMG/");
+              }
+              await client.sendImage(message.from, link, "copertina.jpg", "Ecco la copertina trovata");
+            }
+          }
+        }
+      } else {
+        await client.sendText(message.from, "Ciao, sono il tuo chatbot personale per la ricerca delle copertine. Inviami codice e numero (es: 123456 25)");
+      }
+    });
+  })
+  .catch(e => {
+    console.error('Errore nella creazione della sessione Venom:', e);
+  });
