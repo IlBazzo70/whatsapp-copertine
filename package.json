@@ -1,15 +1,14 @@
 {
-  "name": "whatsapp-copertine",
+  "name": "whatsapp-copertine-venom",
   "version": "1.0.0",
-  "description": "Bot WhatsApp per ricerca copertine da Excel",
+  "description": "Bot WhatsApp per ricerca copertine da Excel, versione Venom compatibile con Render gratuito",
   "main": "index.js",
   "scripts": {
-  "start": "node index.js && tail -f /dev/null"
-},
+    "start": "node index.js"
+  },
   "dependencies": {
-    "@open-wa/wa-automate": "^4.76.0",
+    "venom-bot": "^5.0.5",
     "axios": "^1.6.7",
-    "xlsx": "^0.18.5",
-    "puppeteer": "^21.3.8"
+    "xlsx": "^0.18.5"
   }
 }
