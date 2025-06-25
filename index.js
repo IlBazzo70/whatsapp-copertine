@@ -1,4 +1,3 @@
-
 const { create, Client } = require('@open-wa/wa-automate');
 const XLSX = require('xlsx');
 const axios = require('axios');
@@ -73,4 +72,9 @@ async function start(client) {
     });
 }
 
-create().then(client => start(client));
+// ✅ Impostazioni compatibili con Render
+create({
+    headless: true,
+    useChrome: false,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+}).then(client => start(client)).catch(e => console.error("Errore all'avvio:", e));
