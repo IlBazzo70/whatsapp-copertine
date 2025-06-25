@@ -72,9 +72,9 @@ async function start(client) {
     });
 }
 
-// ✅ Impostazioni compatibili con Render
+// ✅ Configurazione compatibile con Railway
 create({
     headless: true,
-    useChrome: false,
+    useChrome: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
 }).then(client => start(client)).catch(e => console.error("Errore all'avvio:", e));
